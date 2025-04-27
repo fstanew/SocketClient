@@ -13,24 +13,49 @@ int main(){
     }
 
     SOCKET s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if(s == -1){
+    if(s == INVALID_SOCKET){
         printf("Nie dziala socket\n");
+        WSACleanup();
         return 2;
     }
 
-    char ip[] = {142,250,190,46};
+    char ip[] = {142,250,190,46}; // To IP np. google.com
     struct sockaddr_in serwer;
     serwer.sin_family = AF_INET;
     serwer.sin_port = htons(80);
-    
     serwer.sin_addr.S_un.S_addr = *(unsigned long*)ip;
 
     int polacz = connect(s, (struct sockaddr*)&serwer, sizeof(serwer));
     if(polacz == SOCKET_ERROR){
         printf("Nie polaczono :(\n");
+        closesocket(s);
+        WSACleanup();
+        return 3;
     } else {
-        printf("poloczono\n");
+        printf("Poloczono\n");
     }
+
+    // Proste zapytanie HTTP GET
+    char request[] = "GET / HTTP/1.1\r\nHost: google.com\r\nConnection: close\r\n\r\n";
+    int wyslano = send(s, request, strlen(request), 0);
+    if(wyslano == SOCKET_ERROR){
+        printf("Blad wysylania\n");
+        closesocket(s);
+        WSACleanup();
+        return 4;
+    }
+
+   
+    char buffer[1024];
+    int odebrano;
+    printf("Odpowiedz serwera:\n");
+    do {
+        odebrano = recv(s, buffer, sizeof(buffer) - 1, 0);
+        if(odebrano > 0){
+            buffer[odebrano] = '\0';
+            printf("%s", buffer);
+        }
+    } while(odebrano > 0);
 
     closesocket(s);
     WSACleanup();
