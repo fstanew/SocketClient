@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <windows.h>
 #include <winsock.h>
+#include <string.h>
 
 #pragma comment(lib, "ws2_32")
 
@@ -19,7 +20,7 @@ int main(){
         return 2;
     }
 
-    char ip[] = {142,250,190,46}; // To IP np. google.com
+    char ip[] = {142,250,190,46}; 
     struct sockaddr_in serwer;
     serwer.sin_family = AF_INET;
     serwer.sin_port = htons(80);
@@ -35,7 +36,7 @@ int main(){
         printf("Poloczono\n");
     }
 
-    // Proste zapytanie HTTP GET
+  
     char request[] = "GET / HTTP/1.1\r\nHost: google.com\r\nConnection: close\r\n\r\n";
     int wyslano = send(s, request, strlen(request), 0);
     if(wyslano == SOCKET_ERROR){
@@ -45,17 +46,20 @@ int main(){
         return 4;
     }
 
-   
     char buffer[1024];
     int odebrano;
+    int totalBytes = 0;  
     printf("Odpowiedz serwera:\n");
     do {
         odebrano = recv(s, buffer, sizeof(buffer) - 1, 0);
         if(odebrano > 0){
+            totalBytes += odebrano; 
             buffer[odebrano] = '\0';
             printf("%s", buffer);
         }
     } while(odebrano > 0);
+
+    printf("\n\nLacznie odebrano %d bajtow danych.\n", totalBytes);
 
     closesocket(s);
     WSACleanup();
