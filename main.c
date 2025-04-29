@@ -36,7 +36,6 @@ int main(){
         printf("Poloczono\n");
     }
 
-  
     char request[] = "GET / HTTP/1.1\r\nHost: google.com\r\nConnection: close\r\n\r\n";
     int wyslano = send(s, request, strlen(request), 0);
     if(wyslano == SOCKET_ERROR){
@@ -44,6 +43,14 @@ int main(){
         closesocket(s);
         WSACleanup();
         return 4;
+    }
+
+    FILE *plik = fopen("response.txt", "w");
+    if(plik == NULL){
+        printf("Nie mozna otworzyc pliku do zapisu!\n");
+        closesocket(s);
+        WSACleanup();
+        return 5;
     }
 
     char buffer[1024];
@@ -56,8 +63,11 @@ int main(){
             totalBytes += odebrano; 
             buffer[odebrano] = '\0';
             printf("%s", buffer);
+            fprintf(plik, "%s", buffer);
         }
     } while(odebrano > 0);
+
+    fclose(plik);
 
     printf("\n\nLacznie odebrano %d bajtow danych.\n", totalBytes);
 
