@@ -20,29 +20,49 @@ int main(){
         return 2;
     }
 
-    char ip[] = {142,250,190,46}; 
+    char host[100];
+    char sciezka[200];
+
+    printf("Podaj hosta (np. google.com): ");
+    scanf("%99s", host);
+
+    printf("Podaj sciezke (np. / lub /search): ");
+    scanf("%199s", sciezka);
+
+    struct hostent *h = gethostbyname(host);
+    if(h == NULL){
+        printf("Nie znaleziono hosta\n");
+        closesocket(s);
+        WSACleanup();
+        return 3;
+    }
+
     struct sockaddr_in serwer;
     serwer.sin_family = AF_INET;
     serwer.sin_port = htons(80);
-    serwer.sin_addr.S_un.S_addr = *(unsigned long*)ip;
+    serwer.sin_addr = *(struct in_addr*)h->h_addr;
 
     int polacz = connect(s, (struct sockaddr*)&serwer, sizeof(serwer));
     if(polacz == SOCKET_ERROR){
         printf("Nie polaczono :(\n");
         closesocket(s);
         WSACleanup();
-        return 3;
+        return 4;
     } else {
-        printf("Poloczono\n");
+        printf("Poloczono z %s\n", host);
     }
 
-    char request[] = "GET / HTTP/1.1\r\nHost: google.com\r\nConnection: close\r\n\r\n";
+    char request[512];
+    snprintf(request, sizeof(request),
+             "GET %s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n",
+             sciezka, host);
+
     int wyslano = send(s, request, strlen(request), 0);
     if(wyslano == SOCKET_ERROR){
         printf("Blad wysylania\n");
         closesocket(s);
         WSACleanup();
-        return 4;
+        return 5;
     }
 
     FILE *plik = fopen("response.txt", "w");
@@ -50,7 +70,7 @@ int main(){
         printf("Nie mozna otworzyc pliku do zapisu!\n");
         closesocket(s);
         WSACleanup();
-        return 5;
+        return 6;
     }
 
     char buffer[1024];
