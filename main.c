@@ -52,6 +52,9 @@ int main(){
         printf("Poloczono z %s\n", host);
     }
 
+    // Start pomiaru czasu
+    DWORD startTime = GetTickCount();
+
     char request[512];
     snprintf(request, sizeof(request),
              "GET %s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n",
@@ -75,12 +78,12 @@ int main(){
 
     char buffer[1024];
     int odebrano;
-    int totalBytes = 0;  
+    int totalBytes = 0;
     printf("Odpowiedz serwera:\n");
     do {
         odebrano = recv(s, buffer, sizeof(buffer) - 1, 0);
         if(odebrano > 0){
-            totalBytes += odebrano; 
+            totalBytes += odebrano;
             buffer[odebrano] = '\0';
             printf("%s", buffer);
             fprintf(plik, "%s", buffer);
@@ -89,7 +92,10 @@ int main(){
 
     fclose(plik);
 
+   
+    DWORD endTime = GetTickCount();
     printf("\n\nLacznie odebrano %d bajtow danych.\n", totalBytes);
+    printf("Czas trwania odpowiedzi: %lu ms\n", endTime - startTime);
 
     closesocket(s);
     WSACleanup();
