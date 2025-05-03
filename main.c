@@ -48,7 +48,7 @@ int main() {
 
     int polacz = connect(s, (struct sockaddr*)&serwer, sizeof(serwer));
     if (polacz == SOCKET_ERROR) {
-        printf("Nie polaczono :(\n");
+        printf("Nie polaczono z serwerem: %d\n", WSAGetLastError());
         closesocket(s);
         WSACleanup();
         return 4;
