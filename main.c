@@ -33,7 +33,7 @@ int main() {
     printf("Podaj slowo do zliczenia w odpowiedzi (np. html): ");
     scanf("%49s", slowo);
 
-    struct hostent *h = gethostbyname(host);
+    struct hostent* h = gethostbyname(host);
     if (h == NULL) {
         printf("Nie znaleziono hosta\n");
         closesocket(s);
@@ -86,20 +86,34 @@ int main() {
     int totalBytes = 0;
     int licznikWystapien = 0;
 
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     printf("Odpowiedz serwera:\n");
+
     do {
         odebrano = recv(s, buffer, sizeof(buffer) - 1, 0);
         if (odebrano > 0) {
             totalBytes += odebrano;
             buffer[odebrano] = '\0';
-            printf("%s", buffer);
             fprintf(plik, "%s", buffer);
 
-            // Liczenie wystąpień słowa
+            // Liczenie wystąpień słowa i podświetlanie
             char* ptr = buffer;
-            while ((ptr = strstr(ptr, slowo)) != NULL) {
-                licznikWystapien++;
-                ptr += strlen(slowo);
+            while (*ptr) {
+                char* found = strstr(ptr, slowo);
+                if (found) {
+                    fwrite(ptr, 1, found - ptr, stdout);
+
+                    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_INTENSITY);
+                    fwrite(found, 1, strlen(slowo), stdout);
+                    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+
+                    licznikWystapien++;
+                    ptr = found + strlen(slowo);
+                }
+                else {
+                    printf("%s", ptr);
+                    break;
+                }
             }
         }
     } while (odebrano > 0);
