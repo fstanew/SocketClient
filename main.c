@@ -98,6 +98,9 @@ int main(void) {
     char headerBuf[8192] = {0};
     int headerLen = 0;
 
+    char longestLine[2048] = {0};
+    int maxLineLength = 0;
+
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     printf("Odpowiedz serwera:\n");
 
@@ -144,6 +147,11 @@ int main(void) {
                         while (line_end < buffer + odebrano && *line_end != '\n') line_end++;
                         fprintf(matches, "%.*s\n", (int)(line_end - line_start), line_start);
 
+                        if ((int)(line_end - line_start) > maxLineLength) {
+                            maxLineLength = (int)(line_end - line_start);
+                            snprintf(longestLine, sizeof(longestLine), "%.*s", maxLineLength, line_start);
+                        }
+
                         ptr = found + strlen(slowo);
                     } else {
                         fwrite(ptr, 1, (buffer + odebrano) - ptr, stdout);
@@ -171,6 +179,11 @@ int main(void) {
                     while (line_end < buffer + odebrano && *line_end != '\n') line_end++;
                     fprintf(matches, "%.*s\n", (int)(line_end - line_start), line_start);
 
+                    if ((int)(line_end - line_start) > maxLineLength) {
+                        maxLineLength = (int)(line_end - line_start);
+                        snprintf(longestLine, sizeof(longestLine), "%.*s", maxLineLength, line_start);
+                    }
+
                     ptr = found + strlen(slowo);
                 } else {
                     printf("%s", ptr);
@@ -188,6 +201,15 @@ int main(void) {
     fclose(plik);
     fclose(matches);
 
+    FILE *longest = fopen("longest_match.txt", "w");
+    if (longest) {
+        fprintf(longest, "%s\n", longestLine);
+        fclose(longest);
+        printf("\nNajdluzsza linia zawierajaca \"%s\":\n%s\n", slowo, longestLine);
+    } else {
+        printf("Nie udalo sie zapisac longest_match.txt\n");
+    }
+
     DWORD endTime = GetTickCount();
     printf("\n\nLacznie odebrano %d bajtow danych.\n", totalBytes);
     printf("Czas trwania odpowiedzi: %lu ms\n", endTime - startTime);
@@ -198,3 +220,4 @@ int main(void) {
     system("pause");
     return 0;
 }
+
