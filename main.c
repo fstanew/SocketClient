@@ -1,8 +1,8 @@
-#include <stdio.h>
 #include <windows.h>
 #include <winsock.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #pragma comment(lib, "ws2_32")
 
@@ -211,13 +211,25 @@ int main(void) {
     }
 
     DWORD endTime = GetTickCount();
+    DWORD elapsed = endTime - startTime;
     printf("\n\nLacznie odebrano %d bajtow danych.\n", totalBytes);
-    printf("Czas trwania odpowiedzi: %lu ms\n", endTime - startTime);
+    printf("Czas trwania odpowiedzi: %lu ms\n", elapsed);
     printf("Liczba wystapien slowa \"%s\": %d\n", slowo, licznikWystap);
+
+    // --- Dodana funkcjonalność ---
+    FILE *summary = fopen("summary.txt", "w");
+    if (summary) {
+        fprintf(summary, "Host: %s\nSciezka: %s\nSzukane slowo: %s\n", host, sciezka, slowo);
+        fprintf(summary, "Liczba wystapien: %d\n", licznikWystap);
+        fprintf(summary, "Czas odpowiedzi: %lu ms\n", elapsed);
+        fclose(summary);
+        printf("Podsumowanie zapisane w summary.txt\n");
+    } else {
+        printf("Nie udalo sie zapisac summary.txt\n");
+    }
 
     closesocket(s);
     WSACleanup();
     system("pause");
     return 0;
 }
-
