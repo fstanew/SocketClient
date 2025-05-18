@@ -1,6 +1,6 @@
 # Socket Client - Projekt 
 
-Prosty program klienta gniazda sieciowego w języku C, łączący się z adresem IP Google (port 80).  
+klient TCP w C dla Windows, który łączy się z hostem HTTP
 
 ## 📥 Wymagania
 - Kompilator GCC (np. MinGW w Windows)
